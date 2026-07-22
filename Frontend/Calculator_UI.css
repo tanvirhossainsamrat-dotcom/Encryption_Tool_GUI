@@ -1,0 +1,263 @@
+/* 
+         * ==========================================
+         * CALCULATOR & CONVERSIONS UI
+         * ==========================================
+         */
+.calc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.toggle-label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #A0A0A0;
+    transition: color 0.3s;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    transition: background 0.3s var(--apple-ease);
+}
+
+.toggle-knob {
+    position: absolute;
+    top: 1px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.3s var(--apple-ease);
+}
+
+.toggle-container:hover .toggle-label {
+    color: #fff;
+}
+
+.toggle-active .toggle-switch {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.toggle-active .toggle-knob {
+    transform: translateX(20px);
+}
+
+.calc-wrapper {
+    display: flex;
+    gap: 30px;
+    height: 600px;
+    position: relative;
+    overflow: hidden;
+    flex-grow: 1;
+}
+
+.calc-main {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    transition: flex 0.6s var(--apple-ease);
+    z-index: 2;
+}
+
+.calc-display {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--accent-dim);
+    height: 100px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    padding: 10px 20px;
+    box-sizing: border-box;
+    transition: border-color 0.4s ease;
+}
+
+.calc-history {
+    color: #888;
+    font-size: 16px;
+    font-family: monospace;
+    height: 24px;
+}
+
+.calc-input {
+    color: var(--accent);
+    font-size: 42px;
+    font-family: monospace;
+    font-weight: bold;
+    border: none;
+    background: transparent;
+    text-align: right;
+    width: 100%;
+    outline: none;
+    transition: color 0.4s ease;
+}
+
+.calc-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    flex-grow: 1;
+}
+
+.calc-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.1s var(--apple-ease);
+}
+
+.calc-btn:hover,
+.calc-btn.kb-active {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--accent);
+    transform: scale(1.04);
+}
+
+.calc-btn:active {
+    transform: scale(0.92) !important;
+}
+
+.calc-btn.op {
+    color: var(--accent);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.calc-btn.eq {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.calc-btn.clear {
+    color: var(--danger);
+    background: rgba(230, 57, 70, 0.1);
+}
+
+.calc-conversions {
+    width: 320px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    box-sizing: border-box;
+    transform: translateX(120%);
+    opacity: 0;
+    transition: transform 0.6s var(--apple-ease), opacity 0.4s ease;
+}
+
+.calc-conversions.show {
+    transform: translateX(0);
+    opacity: 1;
+    position: relative;
+}
+
+.conv-title {
+    color: var(--accent);
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+    transition: color 0.4s ease;
+}
+
+.conv-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.conv-label {
+    font-size: 13px;
+    color: #A0A0A0;
+    display: block;
+}
+
+.conv-row {
+    display: flex;
+    gap: 10px;
+}
+
+.conv-input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-radius: 5px;
+    padding: 12px;
+    font-family: monospace;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.conv-input:focus {
+    border-color: var(--accent);
+}
+
+.conv-btn {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: bold;
+    transition: all 0.2s var(--apple-ease);
+}
+
+.conv-btn:hover {
+    background: var(--accent-dim);
+    transform: scale(1.02);
+}
+
+.conv-btn:active {
+    transform: scale(0.95);
+}
+
+.conv-res {
+    text-align: center;
+    color: #00FF66;
+    font-family: monospace;
+    font-size: 15px;
+    font-weight: bold;
+    height: 20px;
+}

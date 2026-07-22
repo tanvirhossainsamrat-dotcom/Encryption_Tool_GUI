@@ -1,0 +1,322 @@
+/* 
+         * ==========================================
+         * BOOT SEQUENCE SCREENS
+         * ==========================================
+         * #boot-master sits on top of everything (z-index 9999).
+         * It contains 3 distinct scenes that fade into each other via JS.
+         */
+#boot-master {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #020202;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.3s ease, opacity 0.8s var(--apple-ease), visibility 0.8s var(--apple-ease);
+}
+
+/* Scene 1: Group Credits & Sparks Canvas */
+#scene-1 {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.6s var(--apple-ease);
+}
+
+#sparks-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+    mix-blend-mode: screen;
+}
+
+.group-title {
+    position: relative;
+    z-index: 2;
+    font-size: 6vw;
+    font-weight: 900;
+    letter-spacing: 8px;
+    color: #fff;
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.credits-container {
+    z-index: 2;
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(15px);
+}
+
+.credits-container.show {
+    animation: fadeUp 0.8s var(--apple-ease) forwards;
+    animation-delay: 0.3s;
+}
+
+.credits-role {
+    font-size: 0.9vw;
+    color: #777;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.credits-names {
+    font-size: 1.5vw;
+    color: #A0A0A0;
+    letter-spacing: 2px;
+    text-transform: lowercase;
+    font-weight: 300;
+}
+
+.credits-names span {
+    color: #fff;
+    font-weight: 600;
+    letter-spacing: 3px;
+}
+
+/* Scene 2: Cinematic Netflix-style Title Zoom & Snow Canvas */
+#scene-2 {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.6s var(--apple-ease);
+}
+
+#snow-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.app-title {
+    z-index: 2;
+    font-size: 7.5vw;
+    font-weight: 900;
+    letter-spacing: -2px;
+    text-transform: uppercase;
+    color: #E50914;
+    text-shadow: 0 0 50px rgba(229, 9, 20, 0.3);
+    transform: scale(3.5);
+    opacity: 0;
+}
+
+.app-title.netflix-zoom {
+    animation: netflixZoom 2.8s var(--apple-ease) forwards;
+}
+
+@keyframes netflixZoom {
+    0% {
+        transform: scale(3.5);
+        opacity: 0;
+    }
+
+    30% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.uber-line {
+    z-index: 2;
+    width: 0%;
+    height: 2px;
+    background: #fff;
+    margin-top: 15px;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.9);
+}
+
+.uber-line.draw {
+    animation: uberDraw 1.5s var(--apple-ease) forwards;
+    animation-delay: 1s;
+}
+
+@keyframes uberDraw {
+    0% {
+        width: 0%;
+    }
+
+    100% {
+        width: 50vw;
+    }
+}
+
+.tech-stack {
+    z-index: 2;
+    margin-top: 45px;
+    display: flex;
+    gap: 40px;
+    opacity: 0;
+}
+
+.tech-stack.show {
+    animation: fadeIn 1.2s var(--apple-ease) forwards;
+    animation-delay: 1.5s;
+}
+
+.tech-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.tech-icon {
+    width: 45px;
+    height: 45px;
+    fill: #777;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.1));
+}
+
+.tech-name {
+    font-size: 13px;
+    color: #777;
+    text-transform: lowercase;
+    letter-spacing: 2px;
+}
+
+/* Scene 3: Sleek circular loader & technical data stream */
+#scene-3 {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s var(--apple-ease);
+}
+
+.tech-data-stream {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    font-family: 'Consolas', monospace;
+    color: rgba(0, 229, 255, 0.6);
+    font-size: 13px;
+    text-align: right;
+    letter-spacing: 2px;
+    line-height: 1.6;
+}
+
+.sleek-loader-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.loader-ring-svg {
+    width: 280px;
+    height: 280px;
+    transform: rotate(-90deg);
+    position: relative;
+}
+
+.ring-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.05);
+    stroke-width: 2;
+}
+
+.ring-tech {
+    fill: none;
+    stroke: rgba(0, 229, 255, 0.3);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 12;
+    transform-origin: center;
+    animation: spinReverse 6s linear infinite;
+}
+
+@keyframes spinReverse {
+    100% {
+        transform: rotate(-360deg);
+    }
+}
+
+.ring-fill {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 4;
+    stroke-dasharray: 880;
+    stroke-dashoffset: 880;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 12px var(--accent-dim));
+    transition: stroke-dashoffset 0.1s linear;
+}
+
+.loader-percent-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 46px;
+    font-weight: 300;
+    color: #fff;
+    letter-spacing: 2px;
+}
+
+.loader-text-sleek {
+    margin-top: 40px;
+    font-family: 'Segoe UI', sans-serif;
+    color: #888;
+    letter-spacing: 6px;
+    font-size: 13px;
+    text-transform: uppercase;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+/* Utility Animations */
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}

@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/x-icon" href="assets/ico.PNG">
+    <link rel="icon" type="image/png" href="assets/ico.PNG">
+    <link rel="icon" type="image/x-icon" href="assets/ico.PNG">
+    <link rel="stylesheet" href="Frontend/Design.css">
+    <link rel="stylesheet" href="Frontend/Intro.css">
+    <link rel="stylesheet" href="Frontend/Sidebar.css">
+    <link rel="stylesheet" href="Frontend/LiveDemo.css">
+    <link rel="stylesheet" href="Frontend/Calculator_UI.css">
+    <title>Encryption Tool</title>
+
+    <!-- Three.js is required for the WebGL Matrix Rain effect -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+</head>
+
+<body>
+
+    <!-- 
+      MODAL: EXIT APPLICATION
+      Overlays the entire screen and blurs the main app container when triggered. 
+    -->
+    <div id="exit-modal-overlay">
+        <div class="exit-modal-box">
+            <h3>Exit Secure Vault</h3>
+            <p>Are you sure you want to quit the application?</p>
+            <div class="exit-btn-group">
+                <button class="exit-btn-cancel" onclick="cancelExit()">Cancel</button>
+                <button class="exit-btn-confirm" onclick="closeApp()">Quit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 
+      MODAL: CUSTOM ALERTS & PROMPTS
+      A generic modal used across the app (replaces default browser window.alert/prompt). 
+    -->
+    <div id="custom-modal-overlay">
+        <div class="modal-box">
+            <h2 class="modal-title" id="modal-title">Title</h2>
+            <p class="modal-msg" id="modal-msg">Message</p>
+            <input type="text" class="modal-input" id="modal-input" autocomplete="off">
+            <div class="modal-buttons">
+                <button class="action-btn" id="modal-btn-confirm"
+                    style="padding: 12px; font-size: 16px; width: 100%;">Confirm</button>
+                <button class="action-btn btn-danger" id="modal-btn-cancel" onclick="closeModal()"
+                    style="padding: 12px; font-size: 16px; width: 100%;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 
+      CUSTOM CONTEXT MENUS
+      Replaces the default browser right-click menu.
+      One for background clicks (New Note, Folder), one for specific item clicks (Open, Edit, Delete). 
+    -->
+    <div class="context-menu" id="bg-context-menu">
+        <div class="context-item" onclick="openNotepad()"><svg viewBox="0 0 24 24">
+                <path
+                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-3v3h-2v-3H8v-2h3v-3h2v3h3v2zm-3-7V3.5L18.5 9H13z" />
+            </svg> New Note</div>
+        <div class="context-item" onclick="triggerNewFolder()"><svg viewBox="0 0 24 24">
+                <path
+                    d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-1 8h-3v3h-2v-3h-3v-2h3V9h2v3h3v2z" />
+            </svg> New Folder</div>
+        <div class="context-divider"></div>
+        <div class="context-item" onclick="handleNativeImport()"><svg viewBox="0 0 24 24">
+                <path
+                    d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
+            </svg> Import File</div>
+    </div>
+
+    <div class="context-menu" id="item-context-menu">
+        <div class="context-item" id="ctx-open"><svg viewBox="0 0 24 24">
+                <path
+                    d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
+            </svg> Open</div>
+        <div class="context-item" id="ctx-edit" style="display:none;"><svg viewBox="0 0 24 24">
+                <path
+                    d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+            </svg> Edit Note</div>
+        <div class="context-item" id="ctx-select"><svg viewBox="0 0 24 24">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+            </svg> Select</div>
+        <div class="context-divider"></div>
+        <div class="context-item" id="ctx-rename"><svg viewBox="0 0 24 24">
+                <path
+                    d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+            </svg> Rename</div>
+        <div class="context-item" id="ctx-copy"><svg viewBox="0 0 24 24">
+                <path
+                    d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />
+            </svg> Copy</div>
+        <div class="context-item" id="ctx-move"><svg viewBox="0 0 24 24">
+                <path
+                    d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 12v-3h-4v-4h4V8l5 5-5 5z" />
+            </svg> Move to Archive</div>
+        <div class="context-divider"></div>
+        <div class="context-item danger" id="ctx-delete"><svg viewBox="0 0 24 24">
+                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+            </svg> Delete</div>
+    </div>
+
+    <!-- 
+      BOOT SEQUENCE WRAPPER
+      Handles the startup animation before showing the main app UI.
+    -->
+    <div id="boot-master">
+        <div id="scene-1">
+            <canvas id="sparks-canvas"></canvas>
+            <div class="group-title">GROUP NO.20</div>
+            <div class="credits-container" id="credits-text">
+                <div class="credits-role">Creators & Testers</div>
+                <div class="credits-names"><span>tanvir</span> &nbsp;|&nbsp; <span>anis</span> &nbsp;|&nbsp;
+                    <span>meraj</span></div>
+            </div>
+        </div>
+        <div id="scene-2">
+            <canvas id="snow-canvas"></canvas>
+            <div class="app-title" id="app-title-text">Encryption Tool</div>
+            <div class="uber-line" id="uber-line-el"></div>
+            <div class="tech-stack" id="tech-stack-icons">
+                <div class="tech-item"><svg class="tech-icon" viewBox="0 0 24 24">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm0-8h-2V7h2v2zm4 8h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                    </svg><span class="tech-name">python</span></div>
+                <div class="tech-item"><svg class="tech-icon" viewBox="0 0 24 24">
+                        <path d="M12 2L2 22h20L12 2zm0 4.2L18.8 19H5.2L12 6.2zM11 10h2v4h-2v-4zm0 5h2v2h-2v-2z" />
+                    </svg><span class="tech-name">html</span></div>
+                <div class="tech-item"><svg class="tech-icon" viewBox="0 0 24 24">
+                        <path d="M4 2h16v2H4V2zm0 4h16v2H4V6zm0 4h16v2H4v-2zm0 4h16v2H4v-2zm0 4h16v2H4v-2z" />
+                    </svg><span class="tech-name">css</span></div>
+                <div class="tech-item"><svg class="tech-icon" viewBox="0 0 24 24">
+                        <path
+                            d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 15H7v-2h2v2zm0-4H7V9h2v2zm4 4h-2v-2h2v2zm0-4h-2V9h2v2zm4 4h-2v-2h2v2zm0-4h-2V9h2v2z" />
+                    </svg><span class="tech-name">javascript</span></div>
+                <div class="tech-item"><svg class="tech-icon" viewBox="0 0 24 24">
+                        <path
+                            d="M21 3H3C1.9 3 1 3.9 1 5v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14H5v-2h7v2zm0-4H5v-2h7v2zm0-4H5V7h7v2zm7 8h-5V7h5v10z" />
+                    </svg><span class="tech-name">eel</span></div>
+            </div>
+        </div>
+        <div id="scene-3">
+            <div class="tech-data-stream" id="tech-data-stream">MEM: AWAITING<br>CPU: READY<br>SEC: INIT</div>
+            <div class="sleek-loader-container">
+                <svg class="loader-ring-svg" viewBox="0 0 300 300">
+                    <circle class="ring-bg" cx="150" cy="150" r="140"></circle>
+                    <circle class="ring-tech" cx="150" cy="150" r="120"></circle>
+                    <circle class="ring-fill" id="ring-fill" cx="150" cy="150" r="140"></circle>
+                </svg>
+                <div class="loader-percent-center" id="loader-percent">0%</div>
+            </div>
+            <div class="loader-text-sleek" id="loader-text">INITIALIZING...</div>
+        </div>
+    </div>
+
+    <!-- WebGL Canvas replaces the old 2D Canvas for Matrix Rain -->
+    <canvas id="matrix-canvas"></canvas>
+
+    <!-- 
+      MAIN APPLICATION CONTAINER
+      Includes Sidebar and Main Content areas. Uses Tab-based routing.
+    -->
+    <div id="app-container">
+
+        <div id="app-logo" onclick="toggleSidebar()">VAULT</div>
+
+        <div id="sidebar">
+            <button class="nav-btn active" id="tab-btn-encrypt"
+                onclick="switchTab('encrypt', this, '#00E5FF')">Encrypt</button>
+            <button class="nav-btn" id="tab-btn-decrypt"
+                onclick="switchTab('decrypt', this, '#00FF66')">Decrypt</button>
+            <button class="nav-btn" id="tab-btn-demo" onclick="switchTab('demo', this, '#F72585')">Live Demo</button>
+            <button class="nav-btn" id="tab-btn-docview" onclick="switchTab('docview', this, '#9D4EDD')">Doc
+                View</button>
+            <button class="nav-btn" id="tab-btn-calc"
+                onclick="switchTab('calculator', this, '#FFB703')">Calculator</button>
+            <button class="nav-btn" id="tab-btn-settings"
+                onclick="switchTab('settings', this, '#FF007F')">Settings</button>
+            <button class="nav-btn" id="tab-btn-about" onclick="switchTab('about', this, '#E63946')">About</button>
+
+            <button class="nav-btn exit-btn" onclick="triggerExit()">Exit App</button>
+        </div>
+
+        <div id="main-content">
+
+            <!-- TAB: Encrypt -->
+            <div id="encrypt" class="glass-card active">
+                <h1 style="margin-bottom: 5px;">Encryption Engine</h1>
+                <p class="subtitle">Transform plain text into secure ciphertext.</p>
+                <label>Input Plaintext</label>
+                <textarea id="enc-input" placeholder="Type your message here..."></textarea>
+
+                <div class="action-grid">
+                    <div class="left-col">
+                        <button class="action-btn clear-action"
+                            onclick="document.getElementById('enc-input').value=''; document.getElementById('enc-output').value='';">Clear</button>
+                    </div>
+                    <div class="center-col">
+                        <button class="action-btn" onclick="runEncryption()">ENCRYPT MESSAGE</button>
+                    </div>
+                    <div class="right-col">
+                        <button class="action-btn nav"
+                            onclick="switchTab('decrypt', document.getElementById('tab-btn-decrypt'), '#00FF66')">Next
+                            &rarr;</button>
+                    </div>
+                </div>
+
+                <label>Resulting Ciphertext</label>
+                <textarea id="enc-output" readonly></textarea>
+                <div class="btn-row" style="margin-bottom: 0;">
+                    <button class="action-btn secondary" onclick="copyToClipboard('enc-output', this)">Copy
+                        Result</button>
+                </div>
+            </div>
+
+            <!-- TAB: Decrypt -->
+            <div id="decrypt" class="glass-card">
+                <h1 style="margin-bottom: 5px;">Decryption Engine</h1>
+                <p class="subtitle">Restore original data from encrypted strings.</p>
+                <label>Input Ciphertext</label>
+                <textarea id="dec-input" placeholder="Paste ciphertext here..."></textarea>
+
+                <div class="action-grid">
+                    <div class="left-col">
+                        <button class="action-btn clear-action"
+                            onclick="document.getElementById('dec-input').value=''; document.getElementById('dec-output').value='';">Clear</button>
+                    </div>
+                    <div class="center-col">
+                        <button class="action-btn btn-danger" style="border-color: #00FF66;"
+                            onclick="runDecryption()">DECRYPT MESSAGE</button>
+                    </div>
+                    <div class="right-col">
+                        <button class="action-btn nav" style="border-color:#00FF66;"
+                            onclick="switchTab('encrypt', document.getElementById('tab-btn-encrypt'), '#00E5FF')">&larr;
+                            Previous</button>
+                    </div>
+                </div>
+
+                <label>Original Message</label>
+                <textarea id="dec-output" readonly></textarea>
+                <div class="btn-row" style="margin-bottom: 0;">
+                    <!-- REPLACED BUTTON HERE -->
+                    <button class="action-btn secondary" onclick="pasteToDecryptInput(this)">Paste Here</button>
+                </div>
+            </div>
+
+            <!-- TAB: Live Demo Chat -->
+            <div id="demo" class="glass-card">
+                <h1 style="margin-bottom: 5px;">Live Encryption Demo</h1>
+                <p class="subtitle">Watch end-to-end encryption block third-party interception in real-time.</p>
+
+                <div class="demo-layout">
+                    <!-- HACKER PANEL (Middle Left) -->
+                    <div class="hacker-panel">
+                        <div class="hacker-profile" id="hacker-profile">
+                            <div class="flame-container">
+                                <div class="flame"></div>
+                                <div class="flame"></div>
+                                <div class="flame"></div>
+                            </div>
+                            <div class="hacker-avatar" id="hacker-avatar-container">
+                                <img id="hacker-avatar-img" src="assets/Hacker_Calm.png" width="75" height="75" alt="Hacker"
+                                    style="border-radius: 50%; object-fit: cover;">
+                            </div>
+                            <div class="hacker-info">
+                                <span class="hacker-name">Unknown Hacker</span>
+                                <span class="hacker-status">Listening on network...</span>
+                            </div>
+                        </div>
+                        <div class="hacker-terminal" id="hacker-terminal">
+                            <div class="term-line" style="color:#A0A0A0;">> connection established</div>
+                            <div class="term-line" style="color:#A0A0A0;">> sniffing packets on port 443...</div>
+                        </div>
+                    </div>
+
+                    <!-- CHAT PANEL (Right) -->
+                    <div class="chat-section">
+                        <!-- Visual Map -->
+                        <div class="network-map">
+                            <div class="net-node me-node">
+                                <img src="assets/me.png" width="65" height="65" alt="Me"
+                                    style="border-radius: 50%; object-fit: cover;">
+                                <span>Me</span>
+                            </div>
+                            <div class="net-wire">
+                                <div class="wire-tap"></div>
+                                <div class="net-packet" id="net-packet"></div>
+                            </div>
+                            <div class="net-node friend-node">
+                                <img src="assets/bob.png" width="65" height="65" alt="Bob"
+                                    style="border-radius: 50%; object-fit: cover;">
+                                <span>Bob</span>
+                            </div>
+                        </div>
+
+                        <!-- Chat UI -->
+                        <div class="telegram-ui">
+                            <div class="tg-header">
+                                <img src="https://placehold.co/35x35/00FF66/000000.png?text=BOB" width="35" height="35"
+                                    alt="Bob" style="border-radius: 50%; object-fit: cover;">
+                                <span style="color:#fff; font-size:16px;">Bob</span>
+                                <span
+                                    style="font-size:12px; color:#A0A0A0; font-weight:normal; margin-left:auto;">Online</span>
+                            </div>
+                            <div class="tg-messages" id="tg-messages">
+                                <div class="tg-msg friend">
+                                    <span>Hey! What's up? How's your day going?</span>
+                                </div>
+                            </div>
+                            <div class="tg-input">
+                                <input type="text" id="tg-input-box" placeholder="Write a secure message..."
+                                    onkeypress="if(event.key === 'Enter') sendDemoMsg()">
+                                <button onclick="sendDemoMsg()" id="tg-send-btn">
+                                    <svg viewBox="0 0 24 24" width="20" height="20">
+                                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="#000" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: Document Vault -->
+            <div id="docview" class="glass-card">
+
+                <div id="doc-gallery-view">
+                    <div class="directory-header">
+                        <div>
+                            <div class="directory-title">Secure Vault Directory</div>
+                            <div class="directory-path" id="dir-path" onclick="navigateUp()">Root</div>
+                        </div>
+                        <div class="directory-actions">
+                            <button class="icon-btn danger" id="btn-delete-selected" onclick="deleteSelected()"
+                                style="display:none;">
+                                <svg viewBox="0 0 24 24">
+                                    <path
+                                        d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                                </svg> Delete (<span id="select-count">0</span>)
+                            </button>
+                            <button class="icon-btn" id="btn-select-mode" onclick="toggleSelectMode()">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                                </svg> Select
+                            </button>
+                            <button class="icon-btn" onclick="openNotepad()">
+                                <svg viewBox="0 0 24 24">
+                                    <path
+                                        d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-3v3h-2v-3H8v-2h3v-3h2v3h3v2zm-3-7V3.5L18.5 9H13z" />
+                                </svg> New Note
+                            </button>
+                            <button class="icon-btn" onclick="handleNativeImport()">
+                                <svg viewBox="0 0 24 24">
+                                    <path
+                                        d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
+                                </svg> Import
+                            </button>
+                            <button class="icon-btn" onclick="openVaultFolder(this)">
+                                <svg viewBox="0 0 24 24">
+                                    <path
+                                        d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z" />
+                                </svg> Explorer
+                            </button>
+                        </div>
+                    </div>
+                    <div class="vault-grid" id="directory-list"></div>
+                </div>
+
+                <div id="doc-notepad-view">
+                    <div class="notepad-container">
+                        <div class="notepad-toolbar">
+                            <input type="text" class="notepad-title-input" id="notepad-title"
+                                placeholder="Name your note (e.g. secret.txt)" autocomplete="off">
+                            <button id="save-note-btn" class="btn-minimal" onclick="saveNotepadNote()"
+                                style="margin: 0 10px;">Save</button>
+                            <button class="close-btn" onclick="closeNotepad()">Cancel</button>
+                        </div>
+                        <textarea class="notepad-textarea" id="notepad-content"
+                            placeholder="Start typing..."></textarea>
+                    </div>
+                </div>
+
+                <div id="doc-viewer-frame">
+                    <div class="viewer-container ratio-1-1" id="viewer-container">
+                        <div class="viewer-toolbar">
+                            <span id="active-filename">Document Viewer</span>
+                            <button id="toolbar-edit-btn" onclick="editCurrentViewerFile()" class="edit-tool-btn"
+                                style="display:none;">Edit Note</button>
+
+                            <button onclick="setRatio('1-1')">1:1</button>
+                            <button onclick="setRatio('16-9')">16:9</button>
+                            <button onclick="setRatio('4-3')">4:3</button>
+                            <button onclick="toggleDocFullscreen()">Fullscreen</button>
+                            <button class="close-btn" onclick="closeDocViewer()">Back to Vault</button>
+                        </div>
+                        <div id="viewer-content"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- TAB: Calculator / Converter -->
+            <div id="calculator" class="glass-card">
+
+                <div class="calc-header">
+                    <div>
+                        <h1 style="margin-bottom: 5px;">Secure Utility Console</h1>
+                        <p class="subtitle">Offline calculations and standard metric conversions.</p>
+                    </div>
+                    <div class="toggle-container" onclick="toggleConversions()">
+                        <span class="toggle-label">Conversions</span>
+                        <div class="toggle-switch" id="conv-switch">
+                            <div class="toggle-knob"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="calc-wrapper">
+                    <div class="calc-main">
+                        <div class="calc-display">
+                            <div class="calc-history" id="calc-history"></div>
+                            <input type="text" class="calc-input" id="calc-input" value="0" readonly>
+                        </div>
+                        <div class="calc-grid">
+                            <button class="calc-btn clear" data-key="Escape" onclick="calcClear()">C</button>
+                            <button class="calc-btn op" data-key="(" onclick="calcOp('(')">(</button>
+                            <button class="calc-btn op" data-key=")" onclick="calcOp(')')">)</button>
+                            <button class="calc-btn op" data-key="/" onclick="calcOp('/')">&divide;</button>
+
+                            <button class="calc-btn" data-key="7" onclick="calcNum('7')">7</button>
+                            <button class="calc-btn" data-key="8" onclick="calcNum('8')">8</button>
+                            <button class="calc-btn" data-key="9" onclick="calcNum('9')">9</button>
+                            <button class="calc-btn op" data-key="*" onclick="calcOp('*')">&times;</button>
+
+                            <button class="calc-btn" data-key="4" onclick="calcNum('4')">4</button>
+                            <button class="calc-btn" data-key="5" onclick="calcNum('5')">5</button>
+                            <button class="calc-btn" data-key="6" onclick="calcNum('6')">6</button>
+                            <button class="calc-btn op" data-key="-" onclick="calcOp('-')">&minus;</button>
+
+                            <button class="calc-btn" data-key="1" onclick="calcNum('1')">1</button>
+                            <button class="calc-btn" data-key="2" onclick="calcNum('2')">2</button>
+                            <button class="calc-btn" data-key="3" onclick="calcNum('3')">3</button>
+                            <button class="calc-btn op" data-key="+" onclick="calcOp('+')">+</button>
+
+                            <button class="calc-btn" data-key="0" onclick="calcNum('0')"
+                                style="grid-column: span 2;">0</button>
+                            <button class="calc-btn" data-key="." onclick="calcNum('.')">.</button>
+                            <button class="calc-btn eq" data-key="Enter" onclick="calcEq()">=</button>
+                        </div>
+                    </div>
+
+                    <div class="calc-conversions" id="calc-conversions">
+                        <h3 class="conv-title">Quick Conversions</h3>
+
+                        <div class="conv-group">
+                            <span class="conv-label">BMI Calculator</span>
+                            <div class="conv-row">
+                                <input type="number" id="bmi-w" class="conv-input" placeholder="Kg">
+                                <input type="number" id="bmi-h" class="conv-input" placeholder="Cm">
+                            </div>
+                            <button class="conv-btn" onclick="calcBMI()">Calculate BMI</button>
+                            <div class="conv-res" id="bmi-res"></div>
+                        </div>
+
+                        <div class="conv-group">
+                            <span class="conv-label">Temperature</span>
+                            <div class="conv-row">
+                                <input type="number" id="temp-val" class="conv-input" placeholder="Temp">
+                            </div>
+                            <div style="display:flex; gap:10px;">
+                                <button class="conv-btn" onclick="calcTemp('CtoF')">&deg;C to &deg;F</button>
+                                <button class="conv-btn" onclick="calcTemp('FtoC')">&deg;F to &deg;C</button>
+                            </div>
+                            <div class="conv-res" id="temp-res"></div>
+                        </div>
+
+                        <div class="conv-group" style="margin-bottom: 0;">
+                            <span class="conv-label">Distance (Meters &harr; CM)</span>
+                            <div class="conv-row">
+                                <input type="number" id="dist-val" class="conv-input" placeholder="Length">
+                            </div>
+                            <div style="display:flex; gap:10px;">
+                                <button class="conv-btn" onclick="calcDist('MtoCM')">M to CM</button>
+                                <button class="conv-btn" onclick="calcDist('CMtoM')">CM to M</button>
+                            </div>
+                            <div class="conv-res" id="dist-res"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: Visual Settings -->
+            <div id="settings" class="glass-card">
+                <h1 style="margin-bottom: 5px;">Visual Settings</h1>
+                <p class="subtitle">Customize the WebGL Matrix Rain engine parameters.</p>
+
+                <div
+                    style="max-width: 500px; margin-top: 30px; background: rgba(0,0,0,0.5); padding: 30px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                        <label style="margin:0; font-size: 15px;">Engine Status</label>
+                        <div class="toggle-container toggle-active" id="matrix-toggle-container"
+                            onclick="toggleMatrix()">
+                            <span class="toggle-label" id="matrix-toggle-label" style="color: #fff;">Active</span>
+                            <div class="toggle-switch" id="matrix-switch">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <label>Matrix Scale (Font Size): <span id="val-scale"
+                            style="color:#fff; font-weight:normal;">12</span>px</label>
+                    <input type="range" id="matrix-scale" min="8" max="64" value="18" class="slider"
+                        oninput="updateMatrixSettings()">
+
+                    <label style="margin-top:25px;">Fall Speed Multiplier: <span id="val-speed"
+                            style="color:#fff; font-weight:normal;">1.0</span>x</label>
+                    <input type="range" id="matrix-speed" min="0.1" max="5.0" step="0.1" value="2.5" class="slider"
+                        oninput="updateMatrixSettings()">
+
+                    <label style="margin-top:25px;">Trail Length Multiplier: <span id="val-trail"
+                            style="color:#fff; font-weight:normal;">1.0</span>x</label>
+                    <input type="range" id="matrix-trail" min="0.1" max="4.0" step="0.1" value="1.2" class="slider"
+                        oninput="updateMatrixSettings()">
+
+                    <label style="margin-top:25px;">Frame Rate (FPS) Cap: <span id="val-fps"
+                            style="color:#fff; font-weight:normal;">Unlocked</span></label>
+                    <input type="range" id="matrix-fps" min="24" max="165" step="1" value="165" class="slider"
+                        oninput="updateMatrixSettings()">
+                </div>
+
+                <div
+                    style="display: flex; gap: 12px; margin-top: 30px; justify-content: flex-start; align-items: center;">
+                    <button class="btn-minimal" onclick="resetMatrixSettings()">Reset</button>
+                    <button class="btn-minimal" id="save-settings-btn" onclick="saveMatrixSettings()">Save
+                        Preferences</button>
+                </div>
+            </div>
+
+            <!-- TAB: About Page -->
+            <div id="about" class="glass-card">
+                <h1 style="margin-bottom: 5px;">About Encryption Tool</h1>
+                <p class="subtitle">System information and build details.</p>
+                <textarea readonly style="color: var(--text-main); border-color: #333;">
+Encryption Tool v10.0.0
+
+A custom encryption engine designed to obscure and protect plain text messages. Includes isolated local sandboxing for secure document management.
+
+Team NO.20 Developers:
+ • Tanvir - GUI interfacing and worked in Sofware Backend to compile and create the software
+ • Anis   - Worked behind Backend Encryption Logic 
+ • Meraj  - App tester and Financer of projects Documents
+Features:
+ • Cinematic App Boot Sequence
+ • Dynamic Tab-Based UI Themes
+ • Interactive File Explorer & Secure Editor
+ • Embedded Utility Calculator
+ • Exclusive Fullscreen Mode
+                </textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- 
+      PYTHON EEL INTEGRATION
+      Retained Local Backend Connection for Python-based functionality (file system access, etc.) 
+    -->
+    <script type="text/javascript" src="/eel.js"></script>
+
+    <!-- Backend Scripts -->
+    <script src="Backend/Backend.js"></script>
+    <script src="Backend/Intro.js"></script>
+    <script src="Backend/Encrypt_Logic.js"></script>
+    <script src="Backend/Decrypt_Logic.js"></script>
+    <script src="Backend/Custom_Shaders.js"></script>
+    <script src="Backend/RainMatrix_Engine.js"></script>
+    <script src="Backend/MatrixSettingsPage.js"></script>
+    <script src="Backend/Chat_Logic.js"></script>
+    <script src="Backend/Toggle_Sidebar.js"></script>
+    <script src="Backend/Calculator_Logic.js"></script>
+    <script src="Backend/Exit_app_Logic.js"></script>
+</body>
+</html>
